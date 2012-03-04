@@ -1,0 +1,15 @@
+
+
+The FBR approach
+
+footprint set, is a subset of the case base. "provides the same coverage as the case base as a whole"
+
+A problem t has three relations
+RetrievalSpace - cases retrieved for the problem t
+AdaptionSpace - cases can be adapted to solve t
+Solves - Retrieval INTERSECT AdaptionSpace
+
+for a case c there is
+ReachabilitySet - alle cases die in retreival und lösung gleich sind mit c
+Coverageset -  
+

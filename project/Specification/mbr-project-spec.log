@@ -1,0 +1,136 @@
+This is pdfTeX, Version 3.1415926-1.40.10 (MiKTeX 2.8) (preloaded format=pdflatex 2009.11.5)  1 MAR 2012 11:17
+entering extended mode
+**D:/Dropbox/My*Dropbox/10-SS2012/Memory*Bases*Reasoning*in*AI/project/Specific
+ation/mbr-project-spec.tex
+
+("D:/Dropbox/My Dropbox/10-SS2012/Memory Bases Reasoning in AI/project/Specific
+ation/mbr-project-spec.tex"
+LaTeX2e <2009/09/24>
+Babel <v3.8l> and hyphenation patterns for english, dumylang, nohyphenation, ge
+rman, ngerman, german-x-2009-06-19, ngerman-x-2009-06-19, french, loaded.
+("D:\Programme\MiKTeX 2.8\tex\latex\base\article.cls"
+Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+("D:\Programme\MiKTeX 2.8\tex\latex\base\size11.clo"
+File: size11.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+("D:\Programme\MiKTeX 2.8\tex\latex\base\fontenc.sty"
+Package: fontenc 2005/09/27 v1.99g Standard LaTeX package
+
+("D:\Programme\MiKTeX 2.8\tex\latex\base\t1enc.def"
+File: t1enc.def 2005/09/27 v1.99g Standard LaTeX file
+LaTeX Font Info:    Redeclaring font encoding T1 on input line 43.
+))
+("D:\Programme\MiKTeX 2.8\tex\latex\graphics\graphicx.sty"
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+
+("D:\Programme\MiKTeX 2.8\tex\latex\graphics\keyval.sty"
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+("D:\Programme\MiKTeX 2.8\tex\latex\graphics\graphics.sty"
+Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+
+("D:\Programme\MiKTeX 2.8\tex\latex\graphics\trig.sty"
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+("D:\Programme\MiKTeX 2.8\tex\latex\00miktex\graphics.cfg"
+File: graphics.cfg 2007/01/18 v1.5 graphics configuration of teTeX/TeXLive
+)
+Package graphics Info: Driver file: pdftex.def on input line 91.
+
+("D:\Programme\MiKTeX 2.8\tex\latex\pdftex-def\pdftex.def"
+File: pdftex.def 2009/08/25 v0.04m Graphics/color for pdfTeX
+\Gread@gobject=\count87
+))
+\Gin@req@height=\dimen103
+\Gin@req@width=\dimen104
+)
+("D:\Dropbox\My Dropbox\10-SS2012\Memory Bases Reasoning in AI\project\Specific
+ation\mbr-project-spec.aux")
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+
+("D:\Programme\MiKTeX 2.8\tex\context\base\supp-pdf.tex"
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count88
+\scratchdimen=\dimen105
+\scratchbox=\box26
+\nofMPsegments=\count89
+\nofMParguments=\count90
+\everyMPshowfont=\toks15
+\MPscratchCnt=\count91
+\MPscratchDim=\dimen106
+\MPnumerator=\count92
+\everyMPtoPDFconversion=\toks16
+)
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 38.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 38.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 38.
+ [1
+
+{C:/ProgramData/MiKTeX/2.8/pdftex/config/pdftex.map}]
+Overfull \hbox (11.75795pt too wide) in paragraph at lines 52--53
+\T1/cmr/m/n/10.95 "Footprint-based" (FPB) ap-proach in-tro-duced by Smyth and M
+cKenna [[]].
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 59--69
+
+ []
+
+[2]
+("D:\Dropbox\My Dropbox\10-SS2012\Memory Bases Reasoning in AI\project\Specific
+ation\mbr-project-spec.bbl") [3]
+("D:\Dropbox\My Dropbox\10-SS2012\Memory Bases Reasoning in AI\project\Specific
+ation\mbr-project-spec.aux") ) 
+Here is how much of TeX's memory you used:
+ 1135 strings out of 495285
+ 13748 string characters out of 3180738
+ 62575 words of memory out of 3000000
+ 4368 multiletter control sequences out of 15000+200000
+ 14913 words of font info for 35 fonts, out of 3000000 for 9000
+ 14 hyphenation exceptions out of 8191
+ 25i,6n,19p,814b,235s stack positions out of 5000i,500n,10000p,200000b,50000s
+ <C:\Users\terix\AppData\Local\MiKTeX\2.8\fonts\p
+k\ljfour\jknappen\ec\dpi600\ecti1095.pk> <C:\Users\terix\AppData\Local\MiKTeX\2
+.8\fonts\pk\ljfour\jknappen\ec\dpi600\ecbx1095.pk> <C:\Users\terix\AppData\Loca
+l\MiKTeX\2.8\fonts\pk\ljfour\jknappen\ec\dpi600\ecbx1440.pk> <C:\Users\terix\Ap
+pData\Local\MiKTeX\2.8\fonts\pk\ljfour\jknappen\ec\dpi600\ecrm1095.pk> <C:\User
+s\terix\AppData\Local\MiKTeX\2.8\fonts\pk\ljfour\jknappen\ec\dpi600\ecti1200.pk
+> <C:\Users\terix\AppData\Local\MiKTeX\2.8\fonts\pk\ljfour\jknappen\ec\dpi600\e
+crm1200.pk> <C:\Users\terix\AppData\Local\MiKTeX\2.8\fonts\pk\ljfour\jknappen\e
+c\dpi600\ecrm2074.pk> <C:\Users\terix\AppData\Local\MiKTeX\2.8\fonts\pk\ljfour\
+jknappen\ec\dpi600\ecbx2074.pk> <C:\Users\terix\AppData\Local\MiKTeX\2.8\fonts\
+pk\ljfour\jknappen\ec\dpi600\ecti1728.pk>
+Output written on mbr-project-spec.pdf (3 pages, 95035 bytes).
+PDF statistics:
+ 288 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+

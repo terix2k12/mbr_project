@@ -1,0 +1,88 @@
+%
+% Memory based reasoning - Project
+% Specification
+%
+% created: 29. February 2012
+%
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+
+%\usepackage{hyperref}
+%\hypersetup{
+%    colorlinks,
+%    citecolor=black,
+%    filecolor=black,
+%    linkcolor=black,
+%    urlcolor=black
+%}
+
+\title{
+	\emph{A Specification for}\\
+	\huge{\textbf{Footprint-Based Retrieval} }\\
+	-Project-\\
+	Memory-Based Reasoning in AI\\[2em]	
+}
+\author{
+	Philipp Fonteyn (MS11F010)\\
+	Saurabh Baghel (CS12D003)\\[2em]
+	\emph{Master of Technology}\\
+	\emph{Computer Science \& Engineering, IIT Madras}
+}
+\date{1st of March 2012}
+
+%
+% Document
+%
+\begin{document}
+\maketitle
+\newpage
+%\tableofcontents
+%\newpage
+
+%
+%
+%
+\section{Introduction}
+Systems using Case-Based Reasoning (CBR) compare already existing solved problems in a normally large case-base in order to find similar cases and therefore suitable solutions for the problem at hand. If one wants to evaluate the quality of such a system he would have to look for the efficiency and the quality of the retrieval process. We have a trade off between retrieval time and the usability or adaptability of the found solution for the problem at hand. Because of this the research in this area is still an ongoing and interesting one.
+%
+%
+%
+\section{The Footprint-Based Approach}
+To search and retrieve the case-base there are several approaches to structure and traverse the data. In this project we will concentrate on the so called "Footprint-based" (FPB) approach introduced by Smyth and McKenna \cite{FPBR}. The main idea of this approach is to exploit the growing clusters in a case base such that so called "correspondence groups" evolve. A footprint of the case-base is then a subset of the case-base that covers all the existing correspondence groups. In the end iteratively the footprint will be generated. The retrieval process itself then has two major parts. First it identifies the local group with highest correspondence and then searches for the best suited target. 
+
+%
+%
+%
+\section{Outlook on the project}
+%
+\textbf{Description of domain} - In the following report of this project we will introduce the reader further into the FPB approach as introduced in the papers by \cite{FPBR} and \cite{FPBR2}.\\[1em]
+%
+\textbf{Discussion of retrieval} - After a brief explanation of it we will further discuss the similarities and differences with other algorithms like the "Fish and Shrink" algorithm \cite{FAS}. Furthermore we will concentrate on maintenance related issues which will occur in a case database on which FBR is performed.\\[1em]
+%
+\textbf{Implementation of approach} - The project will go along with a implementation of the FPB approach in an appropriate programming language of our choice with case retrieval performed on one of the various free available case bases available on the web.\\[1em]
+%
+\textbf{Improvement of algorithm} - If we come up with a clever idea to improve the results of the FPB approach we would like to try and implement them, where we can compare the results to the original implementation.\\[1em]
+%
+\textbf{Presentation of results} - Performance and experimental results will be presented in an appropriate form. We would like to compare the performance with already given implementations of the FPB approach and especially other approaches.\\[1em]
+%
+
+%\section{Implementation}
+%\section{Experimental Results}
+%\section{Conclusion}
+
+%Links for this project
+%http://cbrwiki.fdi.ucm.es/mediawiki/index.php/Case_Bases
+
+%
+% Literature / References
+%
+%\newpage
+%\nocite{FPBR}
+\bibliographystyle{alpha}
+\bibliography{mbr-bib}
+
+%
+% End of File
+%
+\end{document}

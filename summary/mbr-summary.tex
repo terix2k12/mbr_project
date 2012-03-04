@@ -1,0 +1,334 @@
+%%%%%
+%
+% Indian Institute of Technology Madras, Chennai
+%
+% CS Memory Based Reasoning in AI
+%   
+% autor:   Philipp Fonteyn
+% version: 0.1 - 6 March 2012
+% created: 06. March 2012
+%
+%%%%%
+\documentclass[10pt,oneside,a4paper]{scrartcl}
+
+%
+% Preamble and header 
+%
+\newcommand{\courseTitle}{Memory Based Reasoning in AI}
+\newcommand{\creationDate}{6th of March 2012}
+\newcommand{\semester}{January - May 2012}
+\newcommand{\profName}{S CHakraborti}
+\input{../../uni-preamble}
+\begin{document}	
+\input{../../uni-preface}
+
+%
+% Document
+%
+
+\section{Reasoning and Rationality}
+MBR in AI
+- reasoning
+- computation study of humasn vs machine memorz
+- human memory
+- reasoning influences memory on VSV
+
+includes fields of 
+cognitive science
+neuro science
+psychology
+statistics
+AI
+
+
+Experience Resuse
+A lot of advantages follow
+	shorter time, imrpoved quality, less knowledge
+
+goedelstheorem incompletness theorem -> no perfect world knowledge representation
+
+
+Is it always a good idea to imitate humans? (natures)  ----engineeering---> wheel
+
+abstractions 
+     traditional AI
+     "soft ai" not based solemnly on logic
+
+memories are creating expectatinos
+-rules of a game derive reasoning
+- memories add/modify new rules
+
+
+"ways of thinking" by lazlo mero
+
+
+what is (not) acting rationaly
+-having faith
+-not knowing procedure
+- bias
+-looks promosing solution               what is "rational"
+
+memory -> learning  -> language -> memory
+
+types of knowledge (roger schank)
+- rational
+- non conscious
+-physically conscious
+-emotionally conscious
+
+"The 4 views of AI"
+act \ think   human   rationally
+
+human         x                     x
+
+rationally     x                   v
+
+
+Evolution of language (laguage mamory interaction)
+ we have to learn their language
+
+existing language
+
+memory
+language
+interaction
+
+combines to structure funtion correspondence
+
+-reductionist view
+-systemic view ---> grow systems not build them
+
+
+
+
+
+
+
+Edit distances on graphs
+transformation approaches                might improve similar problems closer to similar solutions
+
+
+a complexity measure??
+
+retrieval vs adaption tradeoff
+
+
+1)) weight correlation
+2)) cohesion           Luc lauritsen
+
+
+alignment measure MASSIVE
+
+picture2
+
+similarity measure for c_n
+yields closest in P is closest in S
+
+applications choose right representation
+case base mainenance (complexity guided) competence modelling
+
+
+
+
+
+
+Expectation failure
+- you do not get what you expected, thus your model is incorrect
+- update with certain observations
+- when you get more than one pointer to a certain change, do it
+
+
+
+
+
+Generalized Cases
+- point case d,l
+- constant case d,l \in D
+- function generalized d,f(d).
+
+
+
+\section{CBR}
+case based reasoning
+
+
+\section{the idea of compression}
+spring-algorithm
+cluster inbetween distance
+
+compressing you more you know you more you compress
+
+compressing you more you know you more you compress
+
+pnemonics
+chunking
+\section{Retrieval}
+
+complexity of retrieval
+internal complexity
+external complexity   there might be a tradeoff
+Goals
+1) avoid multile local sim computations with same a.r.
+2) avoid distance computations with case that have 0 similarity
+
+
+\subsection{K-d trees }
+A kd-tree is a k-dimensional binary search tree. All cases are leaves in this tree and the other nodes partition the case base following certain decision aspects.
+
+Important is, that you can order the cases regarding the attribute you are making a decision on.
+
+
+\cite{wess 95 althoff derwand}
+
+
+\subsection{Inreca Trees}
+
+
+\subsection{Fish and Shrink}
+
+
+cases are seperated into complex attributes called aspects
+flexile weight for each aspect, defined by query
+overall similaritz measure is defined as sum over weighted aspects
+
+Is well suited for complex similarities but small case bases
+measures need to fullfill triangle inequaility
+
+\cite{schaaf}
+
+
+
+\subsection{Case Retrieval Nets / FCRNs}
+burkahrd and lenz
+
+Idee
+Aufbau eines Netzes (vgl. Neuronales Netz) zwecks Zugriff
+o Zerlegen der Fallinformationen in Informationseinheiten (IEs)
+(z.B. Attribut-Wert-Paar)
+- Jede Informationseinheit wird ein Netzknoten
+- Jeder Fall wird durch einen Fallknoten repräsentiert
+o Informationseinheiten, zwischen denen eine Ähnlichkeit >0 besteht,
+werden verbunden.
+- Verbindungsstärke = Ähnlichkeit.
+o Zum Retrieval werden die Informationseinheiten der Anfrage aktiviert.
+o Die Aktivität wird durch das Netzwerk bis zu den Fallknoten
+propagiert.
+o Aktivität an den Fallknoten spiegelt die Ähnlichkeit zur Anfrage wider.
+
+Grundlegend für das CRN ist: Eine Informationseinheit
+(IE) ist eine atomare Wissenseinheit
+- z.B. Attribut-Wert-Paar
+- Für numerische Werte mehrere IEs
+- Text: Pro Stammform ein IE
+o Ein Fall wird durch eine Menge von Informationseinheiten
+repräsentiert
+- z.B. AVPs, oo-Repräsentationen, Texte
+o Eine Query (Anfrage) besteht auch aus einer Menge von
+Informationseinheiten
+
+
+
+
+A CRN is defined as a 5-tupel $N=(E,C,\sigma,\rho,\Pi)$
+\item{E is a finite set of IE}
+\item{C is a finite set of case nodes}
+\item{$\sigma$ is a similarity function}
+\item{$\rho$ is a relevance function}
+\item{$\Pi$ is a set of progapation functions $\pi_n:IR^E->IR \forall n \in E \cup C$}
+
+
+
+
+
+\subsection{Inverted File}
+should be as measure?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+basic case retreival network BCRN
+mario lenz "information entity"
+
+
+
+
+\section{case base basics}
+
+Ralph Bergmann - Experience Managemetn
+
+CBR
+D =
+L =
+case i = di li
+description lesson
+
+
+utility u:DxL   how useful is lk to solve dk
+
+
+
+distinguishability
+p is a problem
+if di=dk then u(di,lm)=u(dk,lm)
+
+
+
+similarity measures DxD auf 0,1  sim(di,dj)
+similar problems have similar solutinos
+sim(d,ki) > sim(d,kj( -> u dki > u d kj
+
+
+
+retrieval mechanisms
+representation/indexing
+learning/evolution
+
+
+evolutionery needs }
+-strucutre functions
+-language evolution
+
+weak } reductionist -> system science [whole > sum of parts]
+
+
+\subsection{similarity measures}
+
+
+
+                                                    
+
+notesv1.png
+
+
+notesv2.png
+
+
+
+
+%
+% Literature
+%
+
+
+\bibliographystyle{alpha}
+\bibliography{thebib}
+
+%
+% End of File
+%
+\end{document}
