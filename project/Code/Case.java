@@ -28,6 +28,22 @@ public class Case {
 	public Description getDescription() {
 		return description;
 	}
+
+	public boolean canBeRetrievedFor(Lesson problem) {
+		// TODO
+
+		return false;
+	}
+
+	public boolean canBeAdaptedFor(Lesson problem) {
+		// TODO 
+		
+		return false;
+	}
+
+	public Lesson getLesson() {
+		return lesson;
+	}
 	
 	
 

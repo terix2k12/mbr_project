@@ -1,12 +1,14 @@
 import java.util.ArrayList;
 import java.util.List;
 
+import lessons.Lesson;
+
 /**
  * 
  * 
  * 
  * @author Philipp Fonteyn (MS11F010) and Saurabh Baghel (CS12D003)
- * @version 0.1 - 17. March 2012
+ * @version 0.2 - 19. March 2012
  * @created 17. March 2012
  */
 public abstract class CaseBase {
@@ -26,34 +28,79 @@ public abstract class CaseBase {
 	
 	public abstract void performMaintenance();
 	
-	public CaseSet getRetrievalSpace(Case c){
+	public CaseSet getRetrievalSpace(Lesson c){
 		CaseSet retrievalSpace = new CaseSet();
 		for(String key : allCases.getIDs()){
 			Case x = allCases.getCase(key);
-			// FIXME
+			if( x.canBeRetrievedFor(c) ){
+				retrievalSpace.addCase(x);
+			}
 		}
 		return retrievalSpace;
 	}
 	
-	public CaseSet getAdaptionSpace(Case c){
-		CaseSet set = null;
-		return set; 
+	public CaseSet getAdaptionSpace(Lesson c){
+		CaseSet adaptionSpace = new CaseSet();
+		for(String key : allCases.getIDs()){
+			Case x = allCases.getCase(key);
+			if( x.canBeAdaptedFor(c) ){
+				adaptionSpace.addCase(x);
+			}
+		}
+		return adaptionSpace; 
 	}
 	
-	public CaseSet getSolveSpace(Case c){
-		return CaseSet.intersect(getAdaptionSpace(c), getRetrievalSpace(c));
+	public boolean solves(Case c, Lesson t){
+		return CaseSet.intersect(getAdaptionSpace(t), getRetrievalSpace(t)).hasCase(c);
 	}
 	
 	public CaseSet getCoverageSet(Case c){
-		return null;
+		CaseSet coverageSet = new CaseSet();
+		for(String key : allCases.getIDs()){
+			Case x = allCases.getCase(key);
+			if ( solves(c, x.getLesson() ) ){
+				coverageSet.addCase(x);
+			}	
+		}
+		return coverageSet;
+	}
+
+	public boolean sharedCoverage(Case c1, Case c2){
+		return CaseSet.intersect(getRelatedSet(c1), getRelatedSet(c1)).hasSize(1);
 	}
 	
 	public CaseSet getCompetenceGroup(Case c){
-		return null;
+		CaseSet competenceGroup = new CaseSet();
+		
+		// Each case that shares coverage with c:
+		for(String key : allCases.getIDs()){
+			Case x = allCases.getCase(key);
+			if ( sharedCoverage(c, x) ){
+				competenceGroup.addCase(x);
+			}
+		}
+		
+		// Remove all cases that share coverage with smbd else:
+		CaseSet cut = CaseSet.difference(allCases, competenceGroup);
+		for(String key : cut.getIDs() ){
+			Case x = cut.getCase(key);
+			if( sharedCoverage(c, x) ){
+				competenceGroup.remove(x);
+			}			
+		}	
+		
+		return competenceGroup;
 	}
 	
 	public CaseSet getReachabilitySet(Case c){
-		return null;
+		CaseSet reachabilitySet = new CaseSet();
+		for(String key : allCases.getIDs()){
+			Case x = allCases.getCase(key);
+			if ( solves(x, c.getLesson() ) ){
+				reachabilitySet.addCase(x);
+			}	
+		}
+		return reachabilitySet;
 	}
 	
 	public CaseSet getRelatedSet(Case c){
