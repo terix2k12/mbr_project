@@ -169,6 +169,9 @@ public class TestFP implements StandardCBRApplication {
 		java.util.Collection<CBRCase> cases = _caseBase.getCases();
 		for(CBRCase c: cases)
 			System.out.println(c);
+		
+		System.out.println("PreCycle complete.");
+		
 		return _caseBase;
 	}
 	
@@ -177,6 +180,8 @@ public class TestFP implements StandardCBRApplication {
 	 */
 	public void cycle(CBRQuery query) throws ExecutionException 
 	{		
+		System.out.println(" Running cycle with query:");
+		
 		// First configure the KNN
 		NNConfig simConfig = new NNConfig();
 		// Set the average() global similarity function for the description of the case
@@ -196,6 +201,7 @@ public class TestFP implements StandardCBRApplication {
 		
 		
 		// A bit of verbose
+		System.out.println("Query has been issued with:");
 		System.out.println("Query Description:");
 		System.out.println(query.getDescription());
 		System.out.println();
@@ -203,14 +209,14 @@ public class TestFP implements StandardCBRApplication {
 		// Execute NN
 		// Collection<RetrievalResult> eval = NNScoringMethod.evaluateSimilarity(_caseBase.getCases(), query, simConfig);
 		
-		Collection<RetrievalResult> eval = FPScoringMethod.evaluateSimilarity(_caseBase.getCases(), query, simConfig);
+		Collection<CBRCase> eval = FPScoringMethod.retrieveCases(_caseBase.getCases(), query, simConfig);
 		
-		// Select k cases
-		eval = SelectCases.selectTopKRR(eval, 5);
+		// Select k cases (is already done in FPScoringMethod...)
+		//eval = SelectCases.selectTopKRR(eval, 5);
 		
 		// Print the retrieval
 		System.out.println("Retrieved cases:");
-		for(RetrievalResult nse: eval)
+		for(CBRCase nse: eval)
 			System.out.println(nse);
 		
 

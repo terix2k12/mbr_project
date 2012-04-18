@@ -1,189 +1,646 @@
 package jcolibri.method.retrieve.Footprint;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import sun.security.action.GetLongAction;
+
+import jcolibri.cbrcore.Attribute;
 import jcolibri.cbrcore.CBRCase;
 import jcolibri.cbrcore.CBRQuery;
+import jcolibri.cbrcore.CaseComponent;
 import jcolibri.method.retrieve.RetrievalResult;
 import jcolibri.method.retrieve.NNretrieval.NNConfig;
+import jcolibri.method.retrieve.NNretrieval.NNScoringMethod;
 import jcolibri.method.retrieve.NNretrieval.similarity.GlobalSimilarityFunction;
+import jcolibri.method.retrieve.NNretrieval.similarity.global.Average;
+import jcolibri.method.retrieve.NNretrieval.similarity.local.Equal;
+import jcolibri.method.retrieve.NNretrieval.similarity.local.Interval;
 import jcolibri.method.retrieve.selection.SelectCases;
+import jcolibri.test.test1.TravelDescription;
 
 public class FPScoringMethod {
 
-	private static List<CBRCase> myFootprintSet = null;
+	private static CaseList myFootprintSet = null;
 
-	public static Collection<RetrievalResult> evaluateSimilarity(
-			Collection<CBRCase> cases, CBRQuery query, NNConfig simConfig) {
+	private static HashMap<CBRCase, CaseList> RetrievalSpace;
+	private static HashMap<CBRCase, CaseList> AdaptationSpace;
+	private static HashMap<CBRCase, CaseList> SolveSpaces;
+	private static HashMap<CBRCase, CaseList> CoverageSet;
+	private static HashMap<CBRCase, CaseList> ReachabilitySet;
+	private static HashMap<CBRCase, CaseList> RelatedSet;
 
-		// inore the config for now
+	private static List<CaseList> allCompetenceGroups = null;
+	private static HashMap<Integer, CaseList> allCompetenceGroupFootprints = new HashMap<Integer, CaseList>();
 
-		// preparations build footprint set:
+	/**
+	 * This method is our central retrieve algorithm.
+	 * 
+	 * @param cases
+	 *            all the cases which are used as casebase
+	 * @param query
+	 *            for which query we retrieve
+	 * @param simConfig
+	 *            TODO
+	 * @return a list of {@link RetrievalResult}
+	 */
+	public static Collection<CBRCase> retrieveCases(Collection<CBRCase> cases,
+			CBRQuery query, NNConfig simConfig) {
 
-		// List<CBRCase> footprintSet = createFootprintSet();
+		// Preparations: build footprint set:
+		// TODO should only be done once for a !!specific!! CBRCase casebase!
+		// if( myFootprintSet == null){
+		createFootprintSet(cases, simConfig);
+		// }
 
+		// Debug the Footprintset:
+		System.out.println("Number of CompetenceGroups: "
+				+ allCompetenceGroups.size());
+		System.out.println("Footprintsize: " + myFootprintSet.size());
+
+		// Create an empty list:
 		List<RetrievalResult> retrievedCases = new ArrayList<RetrievalResult>();
 
-		// step1: search in all cases
-		for (CBRCase cur_case : cases) {
-
+		// step1: search in whole footprint set for appropiate competencegroup
+		// step1a: compute similarity of all cases in the footprint set
+		for (CBRCase _case : myFootprintSet) {
 			GlobalSimilarityFunction gsf = simConfig
 					.getDescriptionSimFunction();
-			Double rating = gsf.compute(cur_case.getDescription(), query
-					.getDescription(), cur_case, query, simConfig);
-
-			retrievedCases.add(new RetrievalResult(cur_case, rating));
-
+			Double rating = gsf.compute(_case.getDescription(), query
+					.getDescription(), _case, query, simConfig);
+			retrievedCases.add(new RetrievalResult(_case, rating));
 		}
-
+		// step1b: select toprated and fetch corresponding competencegroup:
 		java.util.Collections.sort(retrievedCases);
-		return retrievedCases;
-	}
-
-	private static HashMap<CBRCase, List<CBRCase>> RetrievalSpace;
-	private static HashMap<CBRCase, List<CBRCase>> AdaptationSpace;
-	private static HashMap<CBRCase, List<CBRCase>> SolveSpaces;
-
-	private static HashMap<CBRCase, List<CBRCase>> CoverageSet;
-	private static HashMap<CBRCase, List<CBRCase>> ReachabilitySet;
-
-	private static HashMap<CBRCase, List<CBRCase>> RelatedSet;
-
-	public static List<CBRCase> createFootprintSet(
-			Collection<CBRCase> allCases, NNConfig simConfig) {
-		if (myFootprintSet == null) {
-			myFootprintSet = new ArrayList<CBRCase>();
-
-			// For all cases:
-			for (CBRCase cur_case : allCases) {
-
-				// Create all RetrievalSpaces
-				Collection<RetrievalResult> retrievalResults = new ArrayList<RetrievalResult>();
-				for (CBRCase cmp_case : allCases) {
-
-					Double rating = 1.0;
-					retrievalResults.add(new RetrievalResult(cur_case, rating));
-				}
-				java.util.Collections
-						.sort((List<RetrievalResult>) retrievalResults);
-				retrievalResults = SelectCases
-						.selectTopKRR(retrievalResults, 5);
-
-				List<CBRCase> retrievedCases = new ArrayList<CBRCase>();
-				for (RetrievalResult res : retrievalResults) {
-					retrievedCases.add(res.get_case());
-				}
-				RetrievalSpace.put(cur_case, retrievedCases);
-
-				// Create AdaptationSpaces:
-				List<CBRCase> adaptableCases = new ArrayList<CBRCase>();
-				AdaptationSpace.put(cur_case, retrievedCases); // FIXME
-																// calculate
-
-				// Create SolveSpaces:
-				SolveSpaces.put(cur_case, retrievedCases); // FIXME intersection
-
-				// Create CoverageSet:
-				List<CBRCase> coveredCases = new ArrayList<CBRCase>();
-				for (CBRCase cmp_case : allCases) {
-					if (SolveSpaces.get(cur_case).contains(cmp_case)) {
-						coveredCases.add(cmp_case);
-					}
-				}
-				CoverageSet.put(cur_case, coveredCases);
-
-				// Create ReachabilitySet:
-				List<CBRCase> reachableCases = new ArrayList<CBRCase>();
-				for (CBRCase cmp_case : allCases) {
-					if (SolveSpaces.get(cmp_case).contains(cur_case)) {
-						reachableCases.add(cmp_case);
-					}
-				}
-				ReachabilitySet.put(cur_case, reachableCases);
-
-				// Create RelatedSet
-				List<CBRCase> union = union(ReachabilitySet.get(cur_case),
-						CoverageSet.get(cur_case));
-				RelatedSet.put(cur_case, union);
-			}
-
-			
-			// create CompetenceGroups:
-			List<List<CBRCase>> allCompetenceGroups = createCompetenceGroups(allCases);
-			
-
-		}
-		return myFootprintSet;
-	}
-	
-	private static Double relativeCoverage(CBRCase case1){
-		return 0.0; // FIXME
-	}
-	
-	private static List<List<CBRCase>> createCompetenceGroups(Collection<CBRCase> allCases){
-		List<List<CBRCase>> allCompetenceGroups = new ArrayList<List<CBRCase>>();
-		List<CBRCase> initialCompetenceGroup = (List<CBRCase>) allCases; // TODO
-																			// maybe
-																			// use
-																			// a
-																			// copy
-																			// here
-		allCompetenceGroups.add(initialCompetenceGroup);
-
-		boolean completelySearched = false;
-		while (!completelySearched) {
-			for (CBRCase cur_case : initialCompetenceGroup) {
-				for (CBRCase cur_case2 : allCases) {
-					// if this case has sharedcoverage with others in the
-					// casebase
-					if (!haveSharedCoverage(cur_case, cur_case2)) {
-						// remove case from initialCompetenceGroup
-						initialCompetenceGroup.remove(cur_case);
-						boolean noFriends = true;
-						// sort it into an existing CompetenceGroup:
-						for (List<CBRCase> cur_list : allCompetenceGroups) {
-							for (CBRCase case3 : cur_list) {
-								if (haveSharedCoverage(case3, cur_case)) {
-									cur_list.add(cur_case);
-									noFriends = false;
-								}
-							}
-						}
-						if (noFriends) {
-							// otherwise create new
-							List<CBRCase> newCompetenceGroup = new ArrayList<CBRCase>();
-							newCompetenceGroup.add(cur_case);
-							allCompetenceGroups.add(newCompetenceGroup);
-						}
-
-					}
-				}
+		CBRCase topcase = (CBRCase) SelectCases.selectTopK(retrievedCases, 1)
+				.toArray()[0]; // first only
+		CaseList competenceGroup = null;
+		for (CaseList cGroup : allCompetenceGroups) {
+			if (cGroup.contains(topcase)) {
+				competenceGroup = cGroup;
+				break; // for 1 topcase there is only one competencegroup
 			}
 		}
+
+		// step2: search in competencegroups
+		retrievedCases = new ArrayList<RetrievalResult>();
+		for (CBRCase _case : competenceGroup) {
+			GlobalSimilarityFunction gsf = simConfig
+					.getDescriptionSimFunction();
+			Double rating = gsf.compute(_case.getDescription(), query
+					.getDescription(), _case, query, simConfig);
+			retrievedCases.add(new RetrievalResult(_case, rating));
+		}
+
+		// Sort and return retrievalresults:
+		java.util.Collections.sort(retrievedCases);
+		return SelectCases.selectTopK(retrievedCases, 5);
+	}
+
+	
+	private static NNConfig getlocalConfig(){
+		// First configure the KNN
+		NNConfig simConfig = new NNConfig();
+		// Set the average() global similarity function for the description of the case
+		simConfig.setDescriptionSimFunction(new Average());
+		// The accomodation attribute uses the equal() local similarity function
+		simConfig.addMapping(new Attribute("Accomodation", TravelDescription.class), new Equal());
+		// For the duration attribute we are going to set its local similarity function and the weight
+		Attribute duration = new Attribute("Duration", TravelDescription.class);
+		simConfig.addMapping(duration, new Interval(31));
+		simConfig.setWeight(duration, 0.5);
+		// HolidayType --> equal()
+		simConfig.addMapping(new Attribute("HolidayType", TravelDescription.class), new Equal());
+		// NumberOfPersons --> equal()
+		simConfig.addMapping(new Attribute("NumberOfPersons", TravelDescription.class), new Equal());
+		// Price --> InrecaLessIsBetter()
+		simConfig.addMapping(new Attribute("Price", TravelDescription.class), new Interval(4000));
 		
-		// FIXME 
+		return simConfig;
+	}
+	
+	
+	
+	private static CBRQuery transformToQuery(CBRCase _case){
+	/*TravelDescription queryDesc = new TravelDescription();
+	queryDesc.setAccomodation("ThreeStars");
+	queryDesc.setDuration(7);
+	queryDesc.setHolidayType("Recreation");
+	queryDesc.setNumberOfPersons(2);
+	queryDesc.setPrice(700);*/
+	
+	CaseComponent queryDesc = _case.getDescription();
+	
+	CBRQuery query = new CBRQuery();
+	query.setDescription(queryDesc);
+	
+		return query;
+	}
+	
+	
+	/**
+	 * Determines the RetrievalSpace of a "_case" over "allCases".<br>
+	 * <i>Hint:</i> Helper method for Footprint creation.
+	 * 
+	 * @param _case
+	 * @param allCases
+	 */
+	private static void createRetrievalSpace(Collection<CBRCase> allCases,
+			NNConfig numSimConfig) {
+		System.out.print("creating RetrievalSpace ... ");
+		if (RetrievalSpace == null) {
+			RetrievalSpace = new HashMap<CBRCase, CaseList>();
+		}
+
+		// prepare Config
+		NNConfig simConfig = getlocalConfig();
 		
-		return allCompetenceGroups;
+		System.out.println("     for cases: "+allCases.size());
+		for (CBRCase _case : allCases) {
+			System.out.println("	creating RetrievalSpace for " + _case);
+			
+			// transform _case into query:
+			CBRQuery query = transformToQuery(_case);
+			
+			// scoring...
+			Collection<RetrievalResult> retrievalResults = NNScoringMethod.evaluateSimilarity(allCases, query, simConfig);
+			
+			/* for now just leave this code but we probably wont use it anymore
+			Collection<RetrievalResult> retrievalResults = new ArrayList<RetrievalResult>();
+			for (CBRCase cmp_case : allCases) {
+				// 
+				// TODO really understand how this works and maybe adapt it ;D
+				//GlobalSimilarityFunction gsf = numSimConfig.getDescriptionSimFunction();
+				//CaseComponent vgl1 = _case.getDescription();
+				//CaseComponent vgl2 = cmp_case.getDescription();
+				//CBRQuery _query = new  CBRQuery();
+				//_query.setDescription(vgl2);
+				//Double rating = gsf.compute(vgl1, vgl2, _case, _query, numSimConfig);
+				Double rating = FPSimilarityRating.compute(_case, cmp_case);
+				retrievalResults.add(new RetrievalResult(cmp_case, rating));
+			}*/
+
+			java.util.Collections.sort((List<RetrievalResult>) retrievalResults);
+			retrievalResults = SelectCases.selectTopKRR(retrievalResults, 10);
+
+			//System.out.println("being retrieved");
+			CaseList retrievedCases = new CaseList();
+			for (RetrievalResult res : retrievalResults) {
+				//System.out.println(res);
+				retrievedCases.add(res.get_case());
+			}
+			
+			/*System.out.println("RetrievalSpace for case:" );
+			System.out.println(_case);
+			System.out.println(retrievedCases);
+			wait2();*/
+			
+			RetrievalSpace.put(_case, retrievedCases);
+		}
+		System.out.println("Done.");
+		//wait2();
+	}
+
+	/**
+	 * Determines the AdaptionSpace of "_case" over "allCases"
+	 * 
+	 * @param case1
+	 * @param allCases
+	 */
+	private static void createAdaptionSpace(Collection<CBRCase> allCases) {
+		System.out.print("creating AdaptionSpace ... ");
+		if (AdaptationSpace == null) {
+			AdaptationSpace = new HashMap<CBRCase, CaseList>();
+		}
+		for (CBRCase _case : allCases) {
+			CaseList retrievedCases = RetrievalSpace.get(_case);
+			// TODO we just take the same set right now!!!!!!!
+
+			CaseList adaptableCases = new CaseList();
+			AdaptationSpace.put(_case, retrievedCases);
+			// FIXME calculate!!
+		}
+		System.out.println("Done.");
+	}
+
+	/**
+	 * Determines the SolveSpace of "_case" over "allCases"
+	 * 
+	 * @param case1
+	 * @param allCases
+	 */
+	private static void createSolveSpace(Collection<CBRCase> allCases) {
+		System.out.print("creating SolveSpace(c) ... ");
+		if (SolveSpaces == null) {
+			SolveSpaces = new HashMap<CBRCase, CaseList>();
+		}
+		for (CBRCase _case : allCases) {
+			CaseList retrievedCases = RetrievalSpace.get(_case);
+			// TODO we just take the same set right now!!!!!!!
+
+			SolveSpaces.put(_case, retrievedCases); // FIXME intersection
+		}
+		System.out.println("Done");
+	}
+
+	/**
+	 * TODO javadoc
+	 * 
+	 * @param _case
+	 * @param allCases
+	 */
+	private static void createCoverageSet(Collection<CBRCase> allCases) {
+		System.out.println("CoverageSet creation - Start.");
+		if (CoverageSet == null) {
+			CoverageSet = new HashMap<CBRCase, CaseList>();
+		}
+		for (CBRCase _case : allCases) {
+
+			// for all _case in casebase:
+			//System.out.println("  CoverageSet for:");
+			//System.out.println(_case);
+			CaseList coveredCases = new CaseList();
+			
+			for (CBRCase cmp_case : allCases) {
+				//System.out.println("  Shall this case be in the SolveSpace?");
+				//System.out.println(cmp_case);
+				//System.out.println("  SolveSpace of case: "+SolveSpaces.get(_case) );
+				
+				if (SolveSpaces.get(_case).contains(cmp_case)) {
+					coveredCases.add(cmp_case);
+				}
+			}
+			//System.out.println("CoverageSet:" + coveredCases );
+			CoverageSet.put(_case, coveredCases);
+
+		
+		}
+		System.out.println("CoverageSet creation - Done.");
+	}
+	
+	private static void wait2(){
+		// just wait please...
+		System.out.println("hi im waiting for you to read the debugg info....");
+		String strPhone = "";  
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));  
+		try {
+			strPhone = br.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+	}
+
+	/**
+	 * TODO javadoc
+	 * 
+	 * @param case1
+	 * @param allCases
+	 */
+	private static void createReachabilitySet(Collection<CBRCase> allCases) {
+		System.out.print("creating ReachabilitySet(c) ... ");
+		if (ReachabilitySet == null) {
+			ReachabilitySet = new HashMap<CBRCase, CaseList>();
+		}
+		for (CBRCase _case : allCases) {
+			CaseList reachableCases = new CaseList();
+			for (CBRCase cmp_case : allCases) {
+				if (SolveSpaces.get(cmp_case).contains(_case)) {
+					reachableCases.add(cmp_case);
+				}
+			}
+			ReachabilitySet.put(_case, reachableCases);
+		}
+		System.out.println("Done.");
+	}
+
+	/**
+	 * Creates the RelatedSet for a "_case" and stores it.
+	 * 
+	 * @param _case
+	 * @param allCases
+	 */
+	private static void createRelatedSet(Collection<CBRCase> allCases) {
+		System.out.print("creating RelatedSet(c) ... ");
+		if (RelatedSet == null) {
+			RelatedSet = new HashMap<CBRCase, CaseList>();
+		}
+		for (CBRCase _case : allCases) {
+			CaseList union = CaseList.union(ReachabilitySet.get(_case),
+					CoverageSet.get(_case));
+			RelatedSet.put(_case, union);
+		}
+		System.out.println("Done.");
+	}
+
+	/**
+	 * Returns the relativeCoverage of "_case"
+	 * 
+	 * @param _case
+	 * @return
+	 */
+	private static Double relativeCoverage(CBRCase _case) {
+		//System.out.println("Computing relativeCoverage:");
+		Double relative = 0.0, addition;
+		// Sum over cases from CoverageSet(c)
+		CaseList coverage = CoverageSet.get(_case);
+		//System.out.println("CoverageSet isSize " + coverage.size());
+		for (CBRCase _iter : coverage) {
+			//
+			int rsize = ReachabilitySet.get(_iter).size();
+			addition = 1.0 / rsize;
+			//System.out.println("plus 1/" + rsize);
+			relative += addition;
+		}
+		return relative;
 	}
 
 	private static boolean haveSharedCoverage(CBRCase case1, CBRCase case2) {
-		List<CBRCase> temp = intersect(RelatedSet.get(case1), RelatedSet
-				.get(case2));
+		CaseList set1 = RelatedSet.get(case1);
+		CaseList set2 = RelatedSet.get(case2);
+		//System.out.println("sharedcoverage??");
+		//System.out.println("set1:");
+		//System.out.println(set1);
+		//System.out.println("set2:");		
+		//System.out.println(set2);
+		
+		CaseList temp = CaseList.intersect(set1,set2);
+		
+		//System.out.println("intersection:");
+		//System.out.println(temp);
+		//wait2();
 		return (temp.size() > 0);
 	}
 
-	private static List<CBRCase> union(List<CBRCase> list1, List<CBRCase> list2) {
-		// FIXME TODO
-		return null;
+	/**
+	 * Methods sorts "_case" into the set of CompetenceGroups with the following
+	 * two conditions:<br>
+	 * 1) A case has friends within the group he is sorted into<br>
+	 * 2) A case is not friend with any other case in the casebase except for
+	 * grouppartners<br>
+	 * Note: This is a helper method for construction of CompetenceGroups.
+	 * 
+	 * @param _case
+	 */
+	private static void sortIntoCompetenceGroups(CBRCase _case) {
+		if (allCompetenceGroups == null) {
+			allCompetenceGroups = new ArrayList<CaseList>();
+		} else {
+			// TODO when we later want to REconstruct CG we have to
+			// reinitialize!!
+		}
+
+		//System.out.println("Sorting into CGs...");
+		//System.out.println(_case);
+		
+		CaseList sortIntoGroup = null;
+		int likesGroups = 0;
+		// Check for all lists
+		for (CaseList group : allCompetenceGroups) {
+			//System.out.println("Check group " + group.getID());
+			// Does he like all members of the group?
+			boolean likesEverybody = true;
+			for (CBRCase partner : group) {
+				if (!haveSharedCoverage(_case, partner)) {
+					likesEverybody = false;
+					break;
+				}
+			}
+			if (likesEverybody) {
+				//System.out.println("likes group "+group.getID());
+				sortIntoGroup = group;
+				likesGroups++;
+			}
+			if(likesGroups>1){
+				break;
+			}
+		}
+		if (likesGroups == 1) {
+			// he only likes one group...
+			//System.out.println("Put in CG "+sortIntoGroup.getID());
+			sortIntoGroup.add(_case);
+			//wait2();
+		} else { // likes no one or more than one ...
+			// ... create a new CompetenceGroup.
+			//System.out.println("New CG");
+			CaseList newGroup = new CaseList();
+			newGroup.add(_case);
+			allCompetenceGroups.add(newGroup);
+			//wait2();
+		}
 	}
 
-	private static List<CBRCase> intersect(List<CBRCase> list1,
-			List<CBRCase> list2) {
-		// FIXME TODO
-		return null;
+	/**
+	 * This method builds CompetenceGroups on our current casebase. TODO might
+	 * not work if called the SECOND time...
+	 * 
+	 * @param allCases
+	 * @return
+	 */
+	private static void createCompetenceGroups(Collection<CBRCase> allCases) {
+		System.out.println("Creating CompetenceGroups - Start");
+
+		for (CBRCase _case : allCases) {
+			sortIntoCompetenceGroups(_case);
+		}
+
+		System.out.print("Creating CompetenceGroups - Ende (created total "+ allCompetenceGroups.size() +")");
+	}
+
+	/**
+	 * Here the so called Footprint set is created, which is necessary for the
+	 * whole magic of our approach. TODO needs to be called for maintenance
+	 * 
+	 * @param allCases
+	 * @param simConfig
+	 * @return
+	 */
+	protected static void createFootprintSet(Collection<CBRCase> allCases,
+			NNConfig simConfig) {
+		System.out.println("Creating Footprintset.....");
+		// For all the cases in the casebase:
+		CBRCase _case;
+		// compute Spaces
+		createRetrievalSpace(allCases, simConfig);
+		createAdaptionSpace(allCases);
+		createSolveSpace(allCases);
+
+		// compute Coverage and Reachability
+		createCoverageSet(allCases);
+		createReachabilitySet(allCases);
+
+		createRelatedSet(allCases);
+		// TODO compute relative coverage...????
+
+		// Now create the CompetenceGroups:
+		createCompetenceGroups(allCases);
+		System.out.println("Number of CompetenceGroups: "
+				+ allCompetenceGroups.size());
+
+		// And determine a suitable group-footprint for each CompetenceGroup:
+		createCompetenceGroupFootprints(allCases);
+		// Debug the groupfootprints :)
+		System.out.println("Number of CompetenceGroupsFootprints: "
+				+ allCompetenceGroupFootprints.size());
+		for (Integer key : allCompetenceGroupFootprints.keySet()) {
+			CaseList competencegroup = null;
+			for (CaseList _group : allCompetenceGroups) {
+				if (_group.getID() == key) {
+					competencegroup = _group;
+				}
+			}
+			CaseList groupfootprint = allCompetenceGroupFootprints.get(key);
+
+			// System.out.println("Competencegroup:");
+			// System.out.println(competencegroup);
+			// System.out.println("Corresponding Competencegroup Footprint:");
+			// System.out.println(groupfootprint);
+
+		}// end debug
+
+		// Now just union over all CompetenceGroup group-footprints:
+		myFootprintSet = new CaseList();
+		for (Integer key : allCompetenceGroupFootprints.keySet()) {
+			CaseList groupfootprint = allCompetenceGroupFootprints.get(key);
+			//System.out.println("current footprint:");
+			//System.out.println(myFootprintSet);
+			//System.out.println("union with");
+			//System.out.println(groupfootprint);
+			myFootprintSet = CaseList.union(myFootprintSet, groupfootprint);
+		}
+		System.out.println("... creation of Footprintset completed!");
+	}
+
+	/**
+	 * TODO javadoc
+	 * 
+	 * @param allCases
+	 */
+	private static void createCompetenceGroupFootprints(Collection<CBRCase> allCases) {
+		System.out.println("Creating CompetenceGroup Footprints - Start");
+		
+		// init HashMap of all Goups empty and then do for all CompetenceGroups
+		allCompetenceGroupFootprints = new HashMap<Integer, CaseList>();
+		for (CaseList group : allCompetenceGroups) {
+			System.out.println("	Create a groupfootprint for ");
+			System.out.println(group);
+			
+			// init groupfootprint as empty
+			CaseList groupfootprint = new CaseList();
+
+			// sort the cases in current CompetenceGroup by relative coverage:
+			sortCompetenceGroupByRelativeCoverage(group);
+			
+			// TODO stimmts ab hier
+
+			// as long as there are uncovered cases by the groupfootprint
+			int i = 0;
+			while (!competenceGroupIsCovered(group, groupfootprint)) { // FIXME this method might be buggy
+				// select top (not selected) "coveragee"
+				CBRCase coveragee = group.get(i);
+				i++;
+				// and add him to group-footprint
+				groupfootprint.add(coveragee);
+			}
+
+			System.out.println("	Groupfootprint is:");
+			System.out.println(groupfootprint);
+			allCompetenceGroupFootprints.put(group.getID(), groupfootprint);
+			System.out.println("	Done.");
+		}
+
+		System.out.println("Creating CompetenceGroup Footprints - Ende (total created + "+allCompetenceGroupFootprints.size()+")");
+	}
+
+	/**
+	 * Checks if "groupfootprint" covers the Competence "group"
+	 * 
+	 * @param group
+	 * @param groupfootprint
+	 * @return true if yes
+	 */
+	private static boolean competenceGroupIsCovered(CaseList group,
+			CaseList groupfootprint) {
+		
+		System.out.println("isCovered CHECK");
+		System.out.println("group " + group);
+		System.out.println("print " +groupfootprint);
+		
+		if(group.size()>0 && groupfootprint.size()==0){
+			System.out.println("false");			
+			return false;
+		}
+		
+		for (CBRCase _case : group) {
+			boolean isCovered = false;
+			for (CBRCase _rep : groupfootprint) {
+				System.out.println("is the following case covered by one coverageset of footprint?");
+				CaseList coverageset = CoverageSet.get(_rep);
+				System.out.println("thecase:"+_case);
+				System.out.println("footprintee:"+_rep);
+				System.out.println("coverageset:"+coverageset);
+				if (coverageset.contains(_case)) {
+					isCovered = true;
+					break;
+				}
+			}
+			if (!isCovered) {
+				System.out.println("false");
+				return false;
+			}
+		}
+		System.out.println("true");		
+		return true;
+	}
+
+	/**
+	 * Sort this group for relativeCoverage
+	 * @param group
+	 */
+	// Philipp: Method is checked and sorts correctly =)
+	private static void sortCompetenceGroupByRelativeCoverage(CaseList group) {
+		/*
+		CaseList group2 = new CaseList();
+		for (int i = 0; i < 10; i++) {
+			CBRCase _case = group.get(i);
+			group2.add(_case);
+		}
+		group = group2;
+
+		System.out.println("Running sorting on:");
+		for (CBRCase _case : group) {
+			Double rating = relativeCoverage(_case);
+			System.out.println(_case);
+			System.out.println(rating);
+		}*/
+
+		int members = group.size();
+
+		boolean doMore = true;
+		while (doMore) {
+			doMore = false; // assume this is last pass over array
+			for (int i = 0; i < members - 1; i++) {
+				CBRCase _case1 = group.get(i);
+				CBRCase _case2 = group.get(i + 1);
+				if (relativeCoverage(_case1) < relativeCoverage(_case2)) {
+					// exchange elements
+					group.swap(_case1, _case2);
+					doMore = true; // after an exchange, must look again
+				}
+			}
+		}
+
+		/*System.out.println("After sorting:");
+		for (CBRCase _case : group) {
+			Double rating = relativeCoverage(_case);
+			System.out.println(_case);
+			System.out.println(rating);
+		}*/
+
 	}
 
 }

@@ -6,18 +6,24 @@ import java.util.List;
 
 import jcolibri.cbrcore.CBRCase;
 
+/**
+ * Wrapper class for a list of cases...
+ * provides ids for identity and enable more readable code...
+ * @author philipp
+ *
+ */
 public class CaseList implements Iterable<CBRCase>{
 	
 	private static int globalid = 0;
 	private int id;
 	
-	private CaseList caselist;
+	private List<CBRCase> caselist;
 	
 	public CaseList(){
 		id = globalid;
 		globalid++;
 		
-		caselist = new CaseList();
+		caselist = new ArrayList<CBRCase>();
 	}
 	
 	public int getID(){
@@ -25,12 +31,16 @@ public class CaseList implements Iterable<CBRCase>{
 	}
 
 	public void add(CBRCase _case) {
-		caselist.add(_case);		
+		if(caselist.contains(_case)){
+			//System.err.println("Warning, trying to add a case twice.");
+		}else{
+			caselist.add(_case);
+		}
 	}
 	
-	private CaseList get(){
-		return caselist;		
-	}
+	//private CaseList get(){
+	//	return caselist;		
+	//}
 	
 	public boolean contains(CBRCase _case){
 		return caselist.contains(_case);
@@ -45,13 +55,13 @@ public class CaseList implements Iterable<CBRCase>{
 	 */
 	public static CaseList union(CaseList list1, CaseList list2) {
 		CaseList union = new CaseList();
-		for (CBRCase case1 : list1.get()) {
-			if (!union.contains(case1)) {
+		for (CBRCase case1 : list1.caselist) {
+			if (union.contains(case1)) {
 				union.add(case1);
 			}
 		}
-		for (CBRCase case2 : list2.get()) {
-			if (!union.contains(case2)) {
+		for (CBRCase case2 : list2.caselist) {
+			if (union.contains(case2)) {
 				union.add(case2);
 			}
 		}
@@ -68,12 +78,12 @@ public class CaseList implements Iterable<CBRCase>{
 	public static CaseList intersect(CaseList list1, CaseList list2) {
 		CaseList intersection = new CaseList();
 		for (CBRCase case1 : list1.caselist) {
-			if (!list2.contains(case1)) {
+			if (list2.contains(case1)) {
 				intersection.add(case1);
 			}
 		}
 		for (CBRCase case2 : list2.caselist) {
-			if (!list1.contains(case2)) {
+			if (list1.contains(case2)) {
 				intersection.add(case2);
 			}
 		}
@@ -87,6 +97,31 @@ public class CaseList implements Iterable<CBRCase>{
 
 	public int size() {
 		return caselist.size();
+	}
+
+	public CBRCase get(int i) {
+		return caselist.get(i);		
+	}
+
+	/**
+	 * Swaps the elements in the caselist
+	 * @param case1
+	 * @param case2
+	 */
+	public void swap(CBRCase case1, CBRCase case2) {
+		int id1 = caselist.indexOf(case1);
+		int id2 = caselist.indexOf(case2);
+		caselist.set(id2, case1);
+		caselist.set(id1, case2);		
+	}
+	
+	public String toString(){
+		String string = "";
+		string += "CG("+getID()+")="+size()+"\n";
+		for(CBRCase _case : caselist){
+			string += _case + "\n";
+		}
+		return string;
 	}
 
 }
