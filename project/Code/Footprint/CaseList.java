@@ -55,16 +55,24 @@ public class CaseList implements Iterable<CBRCase>{
 	 */
 	public static CaseList union(CaseList list1, CaseList list2) {
 		CaseList union = new CaseList();
+//		System.out.println("Union for");
+//		System.out.println(list1);
+//		System.out.println("and:");
+//		System.out.println(list2);
+//		System.out.println("Union: Union init:");
+//		System.out.println(union);
 		for (CBRCase case1 : list1.caselist) {
-			if (union.contains(case1)) {
+			if (!union.contains(case1)) {
 				union.add(case1);
 			}
 		}
 		for (CBRCase case2 : list2.caselist) {
-			if (union.contains(case2)) {
+			if (!union.contains(case2)) {
 				union.add(case2);
 			}
 		}
+//		System.out.println("Union is:");
+//		System.out.println(union);
 		return union;
 	}
 

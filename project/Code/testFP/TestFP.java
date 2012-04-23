@@ -167,10 +167,33 @@ public class TestFP implements StandardCBRApplication {
 		_caseBase.init(_connector);		
 		// Print the cases
 		java.util.Collection<CBRCase> cases = _caseBase.getCases();
-		for(CBRCase c: cases)
-			System.out.println(c);
+		//for(CBRCase c: cases)
+		//	System.out.println(c);
 		
 		System.out.println("PreCycle complete.");
+
+		// First configure the KNN
+		NNConfig simConfig = new NNConfig();
+		// Set the average() global similarity function for the description of the case
+		simConfig.setDescriptionSimFunction(new Average());
+		// The accomodation attribute uses the equal() local similarity function
+		simConfig.addMapping(new Attribute("Accomodation", TravelDescription.class), new Equal());
+		// For the duration attribute we are going to set its local similarity function and the weight
+		Attribute duration = new Attribute("Duration", TravelDescription.class);
+		simConfig.addMapping(duration, new Interval(31));
+		simConfig.setWeight(duration, 0.5);
+		// HolidayType --> equal()
+		simConfig.addMapping(new Attribute("HolidayType", TravelDescription.class), new Equal());
+		// NumberOfPersons --> equal()
+		simConfig.addMapping(new Attribute("NumberOfPersons", TravelDescription.class), new Equal());
+		// Price --> InrecaLessIsBetter()
+		simConfig.addMapping(new Attribute("Price", TravelDescription.class), new Interval(4000));	
+		
+		// prepare the database... ONLY ONCE
+		FPScoringMethod.createFootprintSet(_caseBase.getCases(), simConfig);
+		
+		System.out.println("FP set built.........");
+		
 		
 		return _caseBase;
 	}
@@ -180,6 +203,7 @@ public class TestFP implements StandardCBRApplication {
 	 */
 	public void cycle(CBRQuery query) throws ExecutionException 
 	{		
+		System.out.println("===========================================================================");
 		System.out.println(" Running cycle with query:");
 		
 		// First configure the KNN
@@ -209,18 +233,17 @@ public class TestFP implements StandardCBRApplication {
 		// Execute NN
 		// Collection<RetrievalResult> eval = NNScoringMethod.evaluateSimilarity(_caseBase.getCases(), query, simConfig);
 		
-		Collection<CBRCase> eval = FPScoringMethod.retrieveCases(_caseBase.getCases(), query, simConfig);
 		
-		// Select k cases (is already done in FPScoringMethod...)
-		//eval = SelectCases.selectTopKRR(eval, 5);
 		
+		System.out.println("first retrieval:");
+		
+		Collection<CBRCase> eval = FPScoringMethod.retrieveCases(query, simConfig);
 		// Print the retrieval
 		System.out.println("Retrieved cases:");
 		for(CBRCase nse: eval)
 			System.out.println(nse);
 		
-
-	}
+		}
 
 	/* (non-Javadoc)
 	 * @see jcolibri.cbraplications.BasicCBRApplication#postCycle()
@@ -261,7 +284,10 @@ public class TestFP implements StandardCBRApplication {
 				// Run a cycle with the query
 				test1.cycle(query);
 				
-				System.out.println("Cycle finished. Type exit to idem or enter to repeat the cycle");
+				// Run a second cycle with a another query (TODO for now the same ;))
+				test1.cycle(query);
+				
+				//System.out.println("Cycle finished. Type exit to idem or enter to repeat the cycle");
 			}
 			//while(!reader.readLine().equals("exit"));
 			
