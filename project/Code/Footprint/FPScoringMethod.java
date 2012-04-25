@@ -50,11 +50,12 @@ public class FPScoringMethod {
 	 *            TODO
 	 * @return a list of {@link RetrievalResult}
 	 */
-	public static Collection<CBRCase> retrieveCases(CBRQuery query, NNConfig simConfig) {
+	public static Collection<CBRCase> retrieveCases(CBRQuery query,
+			NNConfig simConfig) {
 
 		// Preparations: build footprint set:
 		// TODO should only be done once for a !!specific!! CBRCase casebase!
-		if( myFootprintSet == null){
+		if (myFootprintSet == null) {
 			System.out.println("DONT FORGET TO BUILD THE FPS FIRST");
 		}
 
@@ -129,27 +130,12 @@ public class FPScoringMethod {
 		return simConfig;
 	}
 
-	private static CBRQuery transformToQuery(CBRCase _case) {
-		/*
-		 * TravelDescription queryDesc = new TravelDescription();
-		 * queryDesc.setAccomodation("ThreeStars"); queryDesc.setDuration(7);
-		 * queryDesc.setHolidayType("Recreation");
-		 * queryDesc.setNumberOfPersons(2); queryDesc.setPrice(700);
-		 */
 
-		CaseComponent queryDesc = _case.getDescription();
 
-		CBRQuery query = new CBRQuery();
-		query.setDescription(queryDesc);
-
-		return query;
-	}
-
-	
-	private Integer toKey(CBRCase case1, CBRCase case2){
+	private Integer toKey(CBRCase case1, CBRCase case2) {
 		return case1.hashCode() + case2.hashCode();
 	}
-	
+
 	/**
 	 * Determines the RetrievalSpace of a "_case" over "allCases".<br>
 	 * <i>Hint:</i> Helper method for Footprint creation.
@@ -159,7 +145,8 @@ public class FPScoringMethod {
 	 */
 	private static void createRetrievalSpace(Collection<CBRCase> allCases,
 			NNConfig numSimConfig) {
-		System.out.println("creating RetrievalSpace of " + allCases.size() + " cases... ");
+		System.out.println("creating RetrievalSpace of " + allCases.size()
+				+ " cases... ");
 		if (RetrievalSpace == null) {
 			RetrievalSpace = new HashMap<CBRCase, CaseList>();
 		}
@@ -167,76 +154,64 @@ public class FPScoringMethod {
 		// prepare Config
 		NNConfig simConfig = getlocalConfig();
 
-		List<RetrievalResult> retrievalResults;
-		int adv = 0;
-		for (CBRCase _case : allCases) {
-			System.out.println("	creating RetrievalSpace for " + _case);
-			if (adv < 5) {
 
-				// transform _case into query:
-				CBRQuery query = transformToQuery(_case);
-			
-				
-				// scoring...
-				// 
-				List<RetrievalResult> res = new ArrayList<RetrievalResult>();
-				GlobalSimilarityFunction gsf = simConfig.getDescriptionSimFunction();
-				for(CBRCase __case: allCases)
-				{
-					res.add(new RetrievalResult(__case, gsf.compute(__case.getDescription(), query.getDescription(), _case, query, simConfig)));
-				}
-				java.util.Collections.sort(res);
-				retrievalResults = res;
-	
-				
-				
-				
-				
-				
-				adv++;
-				} else {
-				// for now just leave this code but we probably wont use it
-				// anymore
-				retrievalResults = new ArrayList<RetrievalResult>();
-				for (CBRCase cmp_case : allCases) {
-					// 
-					// TODO really understand how this works and maybe adapt it
-					// ;D
-					// GlobalSimilarityFunction gsf =
-					// numSimConfig.getDescriptionSimFunction();
-					// CaseComponent vgl1 = _case.getDescription();
-					// CaseComponent vgl2 = cmp_case.getDescription();
-					// CBRQuery _query = new CBRQuery();
-					// _query.setDescription(vgl2);
-					// Double rating = gsf.compute(vgl1, vgl2, _case, _query,
-					// numSimConfig);
-					Double rating = FPSimilarityRating.compute(_case, cmp_case);
-					retrievalResults.add(new RetrievalResult(cmp_case, rating));
-					java.util.Collections.sort(retrievalResults);
-				}
 
-			}
-
-			retrievalResults = (List<RetrievalResult>) SelectCases.selectTopKRR(retrievalResults, 10);
-			
-			// System.out.println("being retrieved");
-			CaseList retrievedCases = new CaseList();
-			for (RetrievalResult res : retrievalResults) {
-				// System.out.println(res);
-				retrievedCases.add(res.get_case());
-				retrievedCases.add(_case); // FIXME a case is always retrieved for itself...
-			}
-
-			/*
-			 * System.out.println("RetrievalSpace for case:" );
-			 * System.out.println(_case); System.out.println(retrievedCases);
-			 * wait2();
-			 */
-
-			RetrievalSpace.put(_case, retrievedCases);
+		
+		Thread ftbThread = new Thread( new FtbSearcher( allCases, true, RetrievalSpace, simConfig) );
+		Thread btfThread = new Thread( new FtbSearcher( allCases, false, RetrievalSpace, simConfig) );
+		ftbThread.start();
+		btfThread.start();
+		
+		try {
+			ftbThread.join();
+			btfThread.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
+
+//		for (CBRCase _case : allCases) {
+//			System.out.println("	creating RetrievalSpace for " + _case);
+//			List<RetrievalResult> res = new ArrayList<RetrievalResult>();
+//			GlobalSimilarityFunction gsf = simConfig
+//					.getDescriptionSimFunction();
+//
+//			// transform _case into query:
+//			CBRQuery query = transformToQuery(_case);
+//
+//			for (CBRCase __case : allCases) {
+//				double rating = gsf.compute(__case.getDescription(), query
+//						.getDescription(), _case, query, simConfig);
+//				RetrievalResult temp_result = new RetrievalResult(__case,
+//						rating);
+//
+//				res.add(temp_result);
+//			}
+//			java.util.Collections.sort(res);
+//			retrievalResults = res;
+//
+//			retrievalResults = (List<RetrievalResult>) SelectCases
+//					.selectTopKRR(retrievalResults, 10);
+//
+//			// System.out.println("being retrieved");
+//			CaseList retrievedCases = new CaseList();
+//			for (RetrievalResult ress : retrievalResults) {
+//				// System.out.println(res);
+//				retrievedCases.add(ress.get_case());
+//				retrievedCases.add(_case); // FIXME a case is always retrieved
+//											// for itself...
+//			}
+//
+//			System.out.println("RetrievalSpace for case:");
+//			System.out.println(_case);
+//			System.out.println(retrievedCases);
+//			wait2();
+//
+//			RetrievalSpace.put(_case, retrievedCases);
+//		}
+
 		System.out.println("Done.");
-		// wait2();
 	}
 
 	/**
@@ -308,12 +283,12 @@ public class FPScoringMethod {
 					coveredCases.add(cmp_case);
 				}
 			}
-			//System.out.println("CoverageSet:" + coveredCases );
+			// System.out.println("CoverageSet:" + coveredCases );
 			CoverageSet.put(_case, coveredCases);
 
 		}
 		System.out.println("CoverageSet creation - Done.");
-//		wait2();
+		// wait2();
 	}
 
 	private static void wait2() {
@@ -365,16 +340,16 @@ public class FPScoringMethod {
 		for (CBRCase _case : allCases) {
 			CaseList coverageset = CoverageSet.get(_case);
 			CaseList reachabilityset = ReachabilitySet.get(_case);
-			CaseList union = CaseList.union(reachabilityset,coverageset);
+			CaseList union = CaseList.union(reachabilityset, coverageset);
 			// Debuginfo:
-//			System.out.println("RelatedSet: for case " + _case);
-//			System.out.println("Coverageset:");
-//			System.out.println(coverageset);
-//			System.out.println("Reachabilityset:");
-//			System.out.println(reachabilityset);
-//			System.out.println("Union:");
-//			System.out.println(union);
-//			wait2();
+			// System.out.println("RelatedSet: for case " + _case);
+			// System.out.println("Coverageset:");
+			// System.out.println(coverageset);
+			// System.out.println("Reachabilityset:");
+			// System.out.println(reachabilityset);
+			// System.out.println("Union:");
+			// System.out.println(union);
+			// wait2();
 			RelatedSet.put(_case, union);
 		}
 		System.out.println("Done.");
@@ -405,11 +380,11 @@ public class FPScoringMethod {
 	private static boolean haveSharedCoverage(CBRCase case1, CBRCase case2) {
 		CaseList set1 = RelatedSet.get(case1);
 		CaseList set2 = RelatedSet.get(case2);
-//		System.out.println("sharedcoverage??");
-//		System.out.println("set1:");
-//		System.out.println(set1);
-//		System.out.println("set2:");
-//		System.out.println(set2);
+		// System.out.println("sharedcoverage??");
+		// System.out.println("set1:");
+		// System.out.println(set1);
+		// System.out.println("set2:");
+		// System.out.println(set2);
 
 		CaseList temp = CaseList.intersect(set1, set2);
 
@@ -430,14 +405,14 @@ public class FPScoringMethod {
 	 * @param _case
 	 */
 	private static void sortIntoCompetenceGroups(CBRCase _case) {
-//		System.out.println("Sorting into CGs...");
-//		System.out.println(_case);
+		// System.out.println("Sorting into CGs...");
+		// System.out.println(_case);
 
 		CaseList sortIntoGroup = null;
 		int likesGroups = 0;
 		// Check for all lists
 		for (CaseList group : allCompetenceGroups) {
-//			 System.out.println("Check group " + group.getID());
+			// System.out.println("Check group " + group.getID());
 			// Does he like all members of the group?
 			boolean likesEverybody = true;
 			for (CBRCase partner : group) {
@@ -457,16 +432,16 @@ public class FPScoringMethod {
 		}
 		if (likesGroups == 1) {
 			// he only likes one group...
-//			System.out.println("only likes "+sortIntoGroup.getID());
+			// System.out.println("only likes "+sortIntoGroup.getID());
 			sortIntoGroup.add(_case);
 
 		} else { // likes no one or more than one ...
 			// ... create a new CompetenceGroup.
-//			System.out.println("new group because he likes "+likesGroups);
+			// System.out.println("new group because he likes "+likesGroups);
 			CaseList newGroup = new CaseList();
 			newGroup.add(_case);
 			allCompetenceGroups.add(newGroup);
-			
+
 		}
 		// wait2();
 	}
@@ -480,18 +455,19 @@ public class FPScoringMethod {
 	 */
 	private static void createCompetenceGroups(Collection<CBRCase> allCases) {
 		System.out.println("Creating CompetenceGroups - Start");
-	
+
 		if (allCompetenceGroups == null) {
 			allCompetenceGroups = new ArrayList<CaseList>();
 		} else {
 			// TODO when we later want to REconstruct CG we have to
 			// reinitialize!!
 		}
-		
+
 		for (CBRCase _case : allCases) {
-//			System.out.println("Creating CompetenceGroups - till now " + allCompetenceGroups.size());
-//			System.out.println("   next case for sorting in is" + _case);
-			
+			// System.out.println("Creating CompetenceGroups - till now " +
+			// allCompetenceGroups.size());
+			// System.out.println("   next case for sorting in is" + _case);
+
 			sortIntoCompetenceGroups(_case);
 		}
 
@@ -507,11 +483,13 @@ public class FPScoringMethod {
 	 * @param simConfig
 	 * @return
 	 */
-	public static void createFootprintSet(Collection<CBRCase> allCases,NNConfig simConfig) {
+	public static void createFootprintSet(Collection<CBRCase> allCases,
+			NNConfig simConfig) {
 		// Preparations: build footprint set:
 		// TODO should only be done once for a !!specific!! CBRCase casebase!
-		if( myFootprintSet != null){
-			System.out.println("DONT BUILD THE FPS TWICE!!!");//TODO for now....
+		if (myFootprintSet != null) {
+			System.out.println("DONT BUILD THE FPS TWICE!!!");// TODO for
+																// now....
 		}
 
 		System.out.println("Creating Footprintset.....");
@@ -529,8 +507,8 @@ public class FPScoringMethod {
 		createRelatedSet(allCases);
 		// TODO compute relative coverage...????
 
-		//wait2();
-		
+		// wait2();
+
 		// Now create the CompetenceGroups:
 		createCompetenceGroups(allCases);
 		System.out.println("Number of CompetenceGroups: "
@@ -577,45 +555,46 @@ public class FPScoringMethod {
 	 */
 	private static void createCompetenceGroupFootprints(
 			Collection<CBRCase> allCases) {
-		
-//		System.out.println("Creating CompetenceGroup Footprints - Start");
+
+		// System.out.println("Creating CompetenceGroup Footprints - Start");
 
 		// init HashMap of all Goups empty and then do for all CompetenceGroups
 		allCompetenceGroupFootprints = new HashMap<Integer, CaseList>();
-		
+
 		// for all CompetenceGroups:
 		for (CaseList group : allCompetenceGroups) {
-//			System.out.println("=======================");
-//			System.out.println("		Create a groupfootprint for:");
-//			System.out.println(group);
-			
+			// System.out.println("=======================");
+			// System.out.println("		Create a groupfootprint for:");
+			// System.out.println(group);
+
 			// initialize GroupFootprint as empty
 			CaseList groupfootprint = new CaseList();
 
 			// sort the cases in current CompetenceGroup by relative coverage:
 			sortCompetenceGroupByRelativeCoverage(group);
-//			System.out.println("		after sorting:");
-//			System.out.println(group);
+			// System.out.println("		after sorting:");
+			// System.out.println(group);
 
 			// as long as there are uncovered cases by the groupfootprint
 			int i = 0;
-			while ( !competenceGroupIsCovered(group, groupfootprint) && i<=group.size()) { 
+			while (!competenceGroupIsCovered(group, groupfootprint)
+					&& i <= group.size()) {
 				// select top (not selected) "coveragee"
 				CBRCase coveragee = group.get(i);
-				
-//				System.out.println("add "+i+"th one to groupfootprint");
-				
+
+				// System.out.println("add "+i+"th one to groupfootprint");
+
 				// and add him to group-footprint
 				groupfootprint.add(coveragee);
-				
+
 				i++;
 			}
 
-//			System.out.println("	Groupfootprint is:");
-//			System.out.println(groupfootprint);
+			// System.out.println("	Groupfootprint is:");
+			// System.out.println(groupfootprint);
 			allCompetenceGroupFootprints.put(group.getID(), groupfootprint);
-//			System.out.println("	Done for this group.");
-//			System.out.println("-------------------------------");
+			// System.out.println("	Done for this group.");
+			// System.out.println("-------------------------------");
 		}
 
 		System.out
@@ -632,37 +611,37 @@ public class FPScoringMethod {
 	 */
 	private static boolean competenceGroupIsCovered(CaseList group,
 			CaseList groupfootprint) {
-//		System.out.println("group " + group);
-//		System.out.println("footprint " + groupfootprint);
+		// System.out.println("group " + group);
+		// System.out.println("footprint " + groupfootprint);
 
 		// the group is non empty, but the footprint is: return false
 		if (group.size() > 0 && groupfootprint.size() == 0) {
-//			System.out.println("false, weil wegen leer");
+			// System.out.println("false, weil wegen leer");
 			return false;
 		}
-		
+
 		boolean groupIsCovered = false;
 		for (CBRCase _case : group) {
-//			System.out.println("Checking if group member "+_case);
+			// System.out.println("Checking if group member "+_case);
 			boolean caseIsCovered = false;
 			for (CBRCase _rep : groupfootprint) {
-//				System.out.println("is covered by footprint member"+_rep);
+				// System.out.println("is covered by footprint member"+_rep);
 				CaseList coverageset = CoverageSet.get(_rep);
-				
-//				System.out.println("fps coverageset:" + coverageset);
+
+				// System.out.println("fps coverageset:" + coverageset);
 				if (coverageset.contains(_case)) {
-//					System.out.println("Yes, this case is covered by this fpmember");
+					// System.out.println("Yes, this case is covered by this fpmember");
 					caseIsCovered = true;
-				}else{
-//					System.out.println("No, this case is not covered by this fpmember");
+				} else {
+					// System.out.println("No, this case is not covered by this fpmember");
 				}
 			}
 			if (!caseIsCovered) {
-//				System.out.println("false");
+				// System.out.println("false");
 				return false;
 			}
 		}
-		//System.out.println(groupIsCovered);
+		// System.out.println(groupIsCovered);
 		return true;
 	}
 
