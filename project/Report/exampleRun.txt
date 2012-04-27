@@ -1,0 +1,38 @@
+...
+creating ReachabilitySet(c) ... Done.
+RelatedSet: creation - Start.
+Done.
+Creating CompetenceGroups - Start
+Creating CompetenceGroups - Ende (created 961)Number of CompetenceGroups: 961
+Creating CompetenceGroup Footprints - Ende (total created + 961)
+Number of CompetenceGroupsFootprints: 961
+... creation of Footprintset completed!
+FP set built.........
+GUI will idle now...:
+button is clicked...
+gui Button issues a query
+===========================================================================
+ Running cycle with query:
+Query has been issued with:
+Query Description:
+(null;Bathing;700;2;null;Plane;null;April;ThreeStars;null)
+
+Number of CompetenceGroups: 961
+Footprintsize: 994
+Retrieved cases:
+[Description: (Journey34;Bathing;1558;2;Bulgaria;Plane;7;July;ThreeStars;Hotel Phoenix, Sunny Beach)][Solution: null][Sol.Just.: null][Result: null]
+[Description: (Journey211;Bathing;2539;2;Corsica;Plane;14;September;ThreeStars;Studios Le Rocher)][Solution: null][Sol.Just.: null][Result: null]
+retrieval complete...
+button is clicked...
+gui Button issues a query
+===========================================================================
+ Running cycle with query:
+Query has been issued with:
+Query Description:
+(null;Active;700;2;null;Coach;null;August;TwoStars;null)
+
+Number of CompetenceGroups: 961
+Footprintsize: 994
+Retrieved cases:
+[Description: (Journey841;Active;748;2;Slowakei;Car;7;January;TwoStars;Hotel Sverma, High Tatra)][Solution: null][Sol.Just.: null][Result: null]
+retrieval complete...

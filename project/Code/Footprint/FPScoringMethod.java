@@ -153,8 +153,16 @@ public class FPScoringMethod {
 		
 		File f = new File("temp.dat");
 		if(f.exists()) {
-			FPScoringMethod.loadRetrievalSpaceFromDisk();
+			
+			//f.delete();
+			
+			 System.out.println("LOADING RetrievalSPace");
+			 wait2();
+			//FPScoringMethod.loadRetrievalSpaceFromDisk();
 			return;
+		 }else{
+			 System.out.println("creating RetrievalSPace");
+			// wait2();
 		 }		
 		
 		if (RetrievalSpace == null) {
@@ -164,62 +172,29 @@ public class FPScoringMethod {
 		// prepare Config
 		NNConfig simConfig = getlocalConfig();
 
+
+		// parrallelize the creation of this to speed it up
 		Thread ftbThread = new Thread(new FtbSearcher(allCases, true,
 				RetrievalSpace, simConfig));
 		Thread btfThread = new Thread(new FtbSearcher(allCases, false,
 				RetrievalSpace, simConfig));
 		ftbThread.start();
 		btfThread.start();
-
 		try {
 			ftbThread.join();
 			btfThread.join();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		// for (CBRCase _case : allCases) {
-		// System.out.println("	creating RetrievalSpace for " + _case);
-		// List<RetrievalResult> res = new ArrayList<RetrievalResult>();
-		// GlobalSimilarityFunction gsf = simConfig
-		// .getDescriptionSimFunction();
-		//
-		// // transform _case into query:
-		// CBRQuery query = transformToQuery(_case);
-		//
-		// for (CBRCase __case : allCases) {
-		// double rating = gsf.compute(__case.getDescription(), query
-		// .getDescription(), _case, query, simConfig);
-		// RetrievalResult temp_result = new RetrievalResult(__case,
-		// rating);
-		//
-		// res.add(temp_result);
-		// }
-		// java.util.Collections.sort(res);
-		// retrievalResults = res;
-		//
-		// retrievalResults = (List<RetrievalResult>) SelectCases
-		// .selectTopKRR(retrievalResults, 10);
-		//
-		// // System.out.println("being retrieved");
-		// CaseList retrievedCases = new CaseList();
-		// for (RetrievalResult ress : retrievalResults) {
-		// // System.out.println(res);
-		// retrievedCases.add(ress.get_case());
-		// retrievedCases.add(_case); // FIXME a case is always retrieved
-		// // for itself...
-		// }
-		//
-		// System.out.println("RetrievalSpace for case:");
-		// System.out.println(_case);
-		// System.out.println(retrievedCases);
-		// wait2();
-		//
-		// RetrievalSpace.put(_case, retrievedCases);
-		// }
-
 		System.out.println("Done.");
+		
+		// FIXME once it is creating store it and from now one use this one
+		// is of course not useful if casebase changes and we have to recompute
+		// but handle that in a maintenance method...
+		
+		//saveRetrievalSpaceToDisk();
+		//wait2();
 	}
 
 	/**

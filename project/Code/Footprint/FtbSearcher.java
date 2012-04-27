@@ -16,6 +16,9 @@ import jcolibri.method.retrieve.selection.SelectCases;
 
 public class FtbSearcher implements Runnable {
 
+	
+	boolean SpeedVsQuality = true;
+	
 	private HashMap<CBRCase, CaseList> theSpace;
 	private boolean theDir;
 	private ArrayList<CBRCase> theCases;
@@ -71,10 +74,16 @@ public class FtbSearcher implements Runnable {
 		CBRQuery query = transformToQuery(_case);
 
 		for (CBRCase __case : theCases) {
-			//double rating = gsf.compute(__case.getDescription(), query
-			//		.getDescription(), _case, query, simConfig);
 			
-			double rating = FPSimilarityRating.FAKEcompute(_case, __case);
+			
+			double rating;
+			
+			if(SpeedVsQuality){
+				rating = gsf.compute(__case.getDescription(), query
+						.getDescription(), _case, query, simConfig);
+			}else{
+				rating = FPSimilarityRating.FAKEcompute(_case, __case);	
+			}
 			
 			RetrievalResult temp_result = new RetrievalResult(__case,
 					rating);
