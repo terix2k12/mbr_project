@@ -88,9 +88,12 @@ public class FPSimilarityRating {
 		
 		return result;
 
-		// Random random = new Random();
-		// return random.nextDouble();
-
+		
 	}
 
+	public static Double FAKEcompute(CBRCase case1, CBRCase cmpCase) {
+		 Random random = new Random();
+		 return random.nextDouble();
+	}
+	
 }

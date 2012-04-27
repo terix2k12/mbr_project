@@ -1,8 +1,13 @@
 package jcolibri.method.retrieve.Footprint;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -130,8 +135,6 @@ public class FPScoringMethod {
 		return simConfig;
 	}
 
-
-
 	private Integer toKey(CBRCase case1, CBRCase case2) {
 		return case1.hashCode() + case2.hashCode();
 	}
@@ -147,6 +150,13 @@ public class FPScoringMethod {
 			NNConfig numSimConfig) {
 		System.out.println("creating RetrievalSpace of " + allCases.size()
 				+ " cases... ");
+		
+		File f = new File("temp.dat");
+		if(f.exists()) {
+			FPScoringMethod.loadRetrievalSpaceFromDisk();
+			return;
+		 }		
+		
 		if (RetrievalSpace == null) {
 			RetrievalSpace = new HashMap<CBRCase, CaseList>();
 		}
@@ -154,14 +164,13 @@ public class FPScoringMethod {
 		// prepare Config
 		NNConfig simConfig = getlocalConfig();
 
-
-
-		
-		Thread ftbThread = new Thread( new FtbSearcher( allCases, true, RetrievalSpace, simConfig) );
-		Thread btfThread = new Thread( new FtbSearcher( allCases, false, RetrievalSpace, simConfig) );
+		Thread ftbThread = new Thread(new FtbSearcher(allCases, true,
+				RetrievalSpace, simConfig));
+		Thread btfThread = new Thread(new FtbSearcher(allCases, false,
+				RetrievalSpace, simConfig));
 		ftbThread.start();
 		btfThread.start();
-		
+
 		try {
 			ftbThread.join();
 			btfThread.join();
@@ -170,46 +179,45 @@ public class FPScoringMethod {
 			e.printStackTrace();
 		}
 
-
-//		for (CBRCase _case : allCases) {
-//			System.out.println("	creating RetrievalSpace for " + _case);
-//			List<RetrievalResult> res = new ArrayList<RetrievalResult>();
-//			GlobalSimilarityFunction gsf = simConfig
-//					.getDescriptionSimFunction();
-//
-//			// transform _case into query:
-//			CBRQuery query = transformToQuery(_case);
-//
-//			for (CBRCase __case : allCases) {
-//				double rating = gsf.compute(__case.getDescription(), query
-//						.getDescription(), _case, query, simConfig);
-//				RetrievalResult temp_result = new RetrievalResult(__case,
-//						rating);
-//
-//				res.add(temp_result);
-//			}
-//			java.util.Collections.sort(res);
-//			retrievalResults = res;
-//
-//			retrievalResults = (List<RetrievalResult>) SelectCases
-//					.selectTopKRR(retrievalResults, 10);
-//
-//			// System.out.println("being retrieved");
-//			CaseList retrievedCases = new CaseList();
-//			for (RetrievalResult ress : retrievalResults) {
-//				// System.out.println(res);
-//				retrievedCases.add(ress.get_case());
-//				retrievedCases.add(_case); // FIXME a case is always retrieved
-//											// for itself...
-//			}
-//
-//			System.out.println("RetrievalSpace for case:");
-//			System.out.println(_case);
-//			System.out.println(retrievedCases);
-//			wait2();
-//
-//			RetrievalSpace.put(_case, retrievedCases);
-//		}
+		// for (CBRCase _case : allCases) {
+		// System.out.println("	creating RetrievalSpace for " + _case);
+		// List<RetrievalResult> res = new ArrayList<RetrievalResult>();
+		// GlobalSimilarityFunction gsf = simConfig
+		// .getDescriptionSimFunction();
+		//
+		// // transform _case into query:
+		// CBRQuery query = transformToQuery(_case);
+		//
+		// for (CBRCase __case : allCases) {
+		// double rating = gsf.compute(__case.getDescription(), query
+		// .getDescription(), _case, query, simConfig);
+		// RetrievalResult temp_result = new RetrievalResult(__case,
+		// rating);
+		//
+		// res.add(temp_result);
+		// }
+		// java.util.Collections.sort(res);
+		// retrievalResults = res;
+		//
+		// retrievalResults = (List<RetrievalResult>) SelectCases
+		// .selectTopKRR(retrievalResults, 10);
+		//
+		// // System.out.println("being retrieved");
+		// CaseList retrievedCases = new CaseList();
+		// for (RetrievalResult ress : retrievalResults) {
+		// // System.out.println(res);
+		// retrievedCases.add(ress.get_case());
+		// retrievedCases.add(_case); // FIXME a case is always retrieved
+		// // for itself...
+		// }
+		//
+		// System.out.println("RetrievalSpace for case:");
+		// System.out.println(_case);
+		// System.out.println(retrievedCases);
+		// wait2();
+		//
+		// RetrievalSpace.put(_case, retrievedCases);
+		// }
 
 		System.out.println("Done.");
 	}
@@ -489,7 +497,7 @@ public class FPScoringMethod {
 		// TODO should only be done once for a !!specific!! CBRCase casebase!
 		if (myFootprintSet != null) {
 			System.out.println("DONT BUILD THE FPS TWICE!!!");// TODO for
-																// now....
+			// now....
 		}
 
 		System.out.println("Creating Footprintset.....");
@@ -683,6 +691,37 @@ public class FPScoringMethod {
 		 * System.out.println(rating); }
 		 */
 
+	}
+
+	public static void saveRetrievalSpaceToDisk() {
+		File file = new File("temp.dat");
+		try {
+			FileOutputStream f = new FileOutputStream(file);
+			ObjectOutputStream s = new ObjectOutputStream(f);
+			s.writeObject(RetrievalSpace);
+			s.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Saving failed...");
+		}
+	}
+
+	public static void loadRetrievalSpaceFromDisk() {
+		File file = new File("temp.dat");
+		try {
+			FileInputStream f = new FileInputStream(file);
+			ObjectInputStream s;
+			s = new ObjectInputStream(f);
+			RetrievalSpace = (HashMap<CBRCase, CaseList>) s.readObject();
+			s.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Loading failed...");
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Loading2 failed...");
+		}
 	}
 
 }

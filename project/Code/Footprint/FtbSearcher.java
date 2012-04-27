@@ -71,8 +71,11 @@ public class FtbSearcher implements Runnable {
 		CBRQuery query = transformToQuery(_case);
 
 		for (CBRCase __case : theCases) {
-			double rating = gsf.compute(__case.getDescription(), query
-					.getDescription(), _case, query, simConfig);
+			//double rating = gsf.compute(__case.getDescription(), query
+			//		.getDescription(), _case, query, simConfig);
+			
+			double rating = FPSimilarityRating.FAKEcompute(_case, __case);
+			
 			RetrievalResult temp_result = new RetrievalResult(__case,
 					rating);
 
@@ -104,6 +107,7 @@ public class FtbSearcher implements Runnable {
 	private void searchForward() {
 		List<RetrievalResult> retrievalResults = new ArrayList<RetrievalResult>();
 		int s = theCases.size();
+		//s = 50;
 		for (int i=0; i<s/2; i++) {
 			CBRCase _case = theCases.get(i);
 			executeStep(_case, retrievalResults);
@@ -113,6 +117,7 @@ public class FtbSearcher implements Runnable {
 	private void searchBackward() {
 		List<RetrievalResult> retrievalResults = new ArrayList<RetrievalResult>();
 		int s = theCases.size();
+		//s = 50;
 		for (int i=s-1; i>=s/2; i--) {
 			CBRCase _case = theCases.get(i);
 			executeStep(_case, retrievalResults);
