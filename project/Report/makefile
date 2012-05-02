@@ -7,7 +7,7 @@
 # 2011 - Philipp Fonteyn
 #  
 
-TEXFILE = mbr-project-spec
+TEXFILE = mbr-project-report
 
 pdf : $(TEXFILE).tex
 
